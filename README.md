@@ -29,3 +29,10 @@ Quote requests and checkout enquiries are validated and saved to `.data/enquirie
 - `POST /api/orders` — cart checkout enquiry
 
 Order prices are treated as indicative; the server resolves product names and listed prices from its own catalog before saving. Payment and final pricing are confirmed directly with the supplier.
+
+
+## Deploy to Render
+
+The `render.yaml` Blueprint builds the Vite storefront and starts the Node API as one web service. In Render, create a new Blueprint Instance from this repository and select the `render.yaml` file.
+
+The free plan uses an ephemeral filesystem. Customer profiles and enquiries saved under `.data/` can be cleared when Render restarts or redeploys the service. Use a persistent disk or managed database before relying on this for production customer records.

@@ -13,8 +13,8 @@ const accountsFile = path.join(dataDir, 'customers.json');
 const scryptAsync = promisify(scrypt);
 const sessions = new Map();
 let accountQueue = Promise.resolve();
-const host = process.env.API_HOST || '127.0.0.1';
-const port = Number(process.env.API_PORT || 8787);
+const host = process.env.API_HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
+const port = Number(process.env.PORT || process.env.API_PORT || 8787);
 const maxBody = 32 * 1024;
 const products = {
   'rgb-running-board': { name: 'RGB Running Display Board', price: 1150, unit: 'piece' },

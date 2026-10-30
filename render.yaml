@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: technoworld-storefront
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run build
+    startCommand: npm run preview
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
