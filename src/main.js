@@ -106,7 +106,8 @@ function filteredProducts() {
 }
 
 function render() {
-  const previousPanel = Math.round((document.querySelector(".horizontal-track")?.scrollLeft || 0) / Math.max(1, window.innerWidth));
+  const previousTrack = document.querySelector('.horizontal-track');
+  const previousPanel = previousTrack ? Math.round(previousTrack.scrollLeft / Math.max(1, previousTrack.clientWidth)) : 0;
   document.querySelector('#app').innerHTML = `
     <div class="announcement"><div class="container announcement-inner"><span>Custom signs & RGB displays, made for your space</span><a href="tel:${phone}">Questions? Call <b>07942 637 520</b> <span aria-hidden="true">↗</span></a></div></div>
     <header class="site-header container">
@@ -165,7 +166,10 @@ function setupHorizontalNavigation(previousPanel = 0) {
   document.querySelectorAll('.main-nav a[href^="#"], .brand[href^="#"], .horizontal-track a[href^="#"]').forEach(link => link.addEventListener('click', event => {
     const target = document.querySelector(link.getAttribute('href'));
     if (!target?.closest('.horizontal-panel')) return;
-    event.preventDefault(); goToPanel(link.getAttribute('href'));
+    event.preventDefault();
+    const href = link.getAttribute('href');
+    goToPanel(href);
+    history.pushState({ panel: [...track.querySelectorAll('.horizontal-panel')].indexOf(target.closest('.horizontal-panel')) }, '', href);
   }));
   let wheelBusy = false;
   track.addEventListener('wheel', event => {
@@ -388,7 +392,7 @@ function bindEvents(root = document) {
   if (previewInput) previewInput.addEventListener('input', event => { state.previewText = event.target.value.slice(0,42); });
   root.querySelectorAll('[data-color]').forEach(el => el.addEventListener('click', () => { state.previewColor = el.dataset.color; root.querySelectorAll('[data-color]').forEach(item => item.classList.toggle('selected', item.dataset.color === state.previewColor)); }));
   const search = root.querySelector('#product-search');
-  if (search) search.addEventListener('input', event => { const pos = event.target.selectionStart; state.query = event.target.value; const x = document.querySelector('.horizontal-track')?.scrollLeft || 0; render(); document.querySelector('.horizontal-track')?.scrollTo({left:x}); const next = document.querySelector('#product-search'); next.focus(); next.setSelectionRange(pos,pos); });
+  if (search) search.addEventListener('input', event => { const pos = event.target.selectionStart; state.query = event.target.value; const oldTrack = document.querySelector('.horizontal-track'); const slide = oldTrack ? Math.round(oldTrack.scrollLeft / Math.max(1, oldTrack.clientWidth)) : 0; render(); const newTrack = document.querySelector('.horizontal-track'); newTrack?.scrollTo({left:slide * newTrack.clientWidth}); const next = document.querySelector('#product-search'); next.focus(); next.setSelectionRange(pos,pos); });
   root.querySelectorAll('form[data-form]').forEach(form => form.addEventListener('submit', event => { event.preventDefault(); showConfirmation(event.currentTarget, form.dataset.form === 'checkout' ? 'order' : 'quote'); }));
 }
 
@@ -396,7 +400,12 @@ document.addEventListener('keydown', event => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); goToPanel('#shop'); setTimeout(() => document.querySelector('#product-search')?.focus(), 450); }
   if (event.key === 'Escape') { closeDrawer(); closeModal(); }
 });
+window.addEventListener('popstate', () => {
+  if (location.hash && document.querySelector(location.hash)?.closest('.horizontal-panel')) goToPanel(location.hash);
+  else goToSlide(0);
+});
 window.addEventListener('storage', event => { if (event.key === 'tw-cart') { state.cart = JSON.parse(event.newValue || '{}'); render(); } });
 
 render();
+if (location.hash && document.querySelector(location.hash)?.closest('.horizontal-panel')) goToPanel(location.hash);
 restoreCustomerSession();
